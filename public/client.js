@@ -10,16 +10,21 @@ const message = document.getElementById('message'),
 // disconnect_button = document.getElementById('disconnect_button')
 var Users = {}
 
-function getLvideo(callbacks) {
+function getLvideo() {
 
-    navigator.mediaDevices.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
-
+    navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
     var constraints = {
 
         audio: true,
         video: true
     }
-    navigator.getUserMedia(constraints, callbacks.success, callbacks.error)
+    navigator.mediaDevices.getUserMedia(constraints).then((stream)=>{
+        window.localstream = stream;
+        recStream(stream, 'lVideo')
+    }).catch((error)=>{
+        alert("Cannot Access your Camera! \nPlease provide permission manually or check if other application is using the Camera")
+        console.log(err)
+    })
 }
 
 function recStream(stream, elemid) {
@@ -32,18 +37,7 @@ function recStream(stream, elemid) {
 
 }
 
-getLvideo(
-    {
-        success: function (stream) {
-            window.localstream = stream;
-            recStream(stream, 'lVideo')
-        },
-        error: function (err) {
-            alert("Cannot Access your Camera! \nPlease provide permission manually or check if other application is using the Camera")
-            console.log(err)
-        }
-    }
-)
+getLvideo()
 
 
 
