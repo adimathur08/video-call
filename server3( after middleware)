@@ -1,0 +1,181 @@
+const express = require('express')
+const app = express()
+const http = require('http').Server(app)
+const io = require('socket.io')(http)
+const session = require('express-session')
+const cookieParser = require('cookie-parser')
+const cookie = require('cookie')
+
+const PORT = process.env.PORT || 3000;
+
+app.use(express.urlencoded({ extended: true }))
+
+const users = {}
+const usersName = {}
+const Allusers = [ {id: 1, name: 'Admin', username: 'admin', password: 'admin'},
+                {id: 2, name: 'Aditya',username:  'aditya', password: 'aditya'}
+             ]; 
+
+//Setting PORT number
+http.listen(PORT, () => {
+
+    console.log('listening on port : ' + PORT)
+})
+
+
+
+
+const sessionMiddleware = session({
+    name: 'sid',
+    resave: false,
+    saveUninitialized: false,
+    secret: 'hi',
+    
+    cookie: {
+        httpOnly: false,    
+        maxAge: 1000 * 60 * 60 * 24 * 30, // 1  month
+        sameSite: true,
+        signed: false
+    }
+})
+
+io.use(function(socket, next) {
+    sessionMiddleware(socket.request, socket.request.res || {}, next);
+});
+
+app.use(sessionMiddleware)
+
+
+const redirectLogin = (req, res, next)=>{
+
+    if(!req.session.userId){
+        res.redirect('/login')
+    }
+    else{
+        next()
+    }
+
+}
+
+const redirectHome = (req, res, next)=>{
+
+    if(req.session.userId){
+        res.redirect('/')
+    }
+    else{
+        next()
+    }
+
+}
+
+app.get('/', redirectLogin, (req, res) => {
+
+    console.log("INSIDE REDIRECT" + JSON.stringify(req.session))
+    res.sendFile(__dirname + "/index.html")
+})
+
+app.get('/login', redirectHome, (req,res) =>{
+
+    res.sendFile(__dirname + "/login.html")
+})
+
+app.post('/login', (req,res) =>{
+
+    const {username, password} = req.body
+
+    if (username && password){
+
+        const user = Allusers.find(user => user.username === username && user.password === password)
+        if (user){
+            req.session.userId = user.id
+            req.session.name = user.name
+            // console.log(req.session.userId,".............")
+            return res.redirect('/')
+        }
+
+    }
+    res.redirect('/login')
+})
+
+app.get('/logout', redirectLogin, (req,res) =>{
+
+    req.session.destroy(err=>{
+        if (err){
+            console.log(err)
+            return redirect('/')
+        }
+        res.clearCookie('sid')
+        res.redirect('/login')
+    })
+})
+
+
+
+
+
+
+
+//Setting static folder
+app.use(express.static('public'))
+
+
+io.on('connection', (socket) => {
+
+    // console.log("Client connected " + socket.id + " TOTAL LEN : " + Object.keys(users).length + " qqqqqqqq \n\n" + JSON.stringify(socket.handshake.headers))
+    console.log("FOR SESsION ID : \n\n" + JSON.stringify(socket.handshake) + "\n\n")
+    var cookieData = cookie.parse(socket.handshake.headers.cookie)['sid']
+    console.log(cookieData)
+    var a = cookieParser.signedCookie( cookieData, 'hi')
+    console.log("a : " + JSON.stringify(a) + " " + a)
+
+    console.log("SESSION  : " + JSON.stringify(socket.request.session) + "\n")
+
+
+    // console.log("\n sid : " + socket.handshake.headers.cookie + " .... " + cookieData.substring(cookieData.indexOf("sid=") + 4) + "\n")
+
+
+
+
+    console.log("INSIDE CONN")
+    if (!users[socket.id]) {
+        users[socket.id] = socket.id;
+
+        console.log("ALL USERS : " + JSON.stringify(users))
+    }
+    socket.emit("yourID", socket.id);
+    io.sockets.emit("allUsers", {'users':users, 'names':usersName});
+    socket.on('disconnect', () => {
+        delete users[socket.id];
+        io.sockets.emit("allUsers", {'users':users, 'names':usersName});
+    })
+
+    socket.on("callUser", (data) => {
+        io.to(data.userToCall).emit('hey', {signal: data.signalData, from: data.from});
+    })
+
+    socket.on("acceptCall", (data) => {
+        io.to(data.to).emit('callAccepted', data.signal);
+    })
+
+
+    // FOR MESSAGES
+    socket.on('userMessage', (data) => {
+        console.log(data)
+        io.sockets.emit("userMessage", data)
+    });
+
+
+    socket.on("addname", (data) =>{
+
+        // if (data){
+        //     var a = cookieParser.signedCookie(data, 'hi')
+        //     console.log("/////////" + JSON.stringify(data)+ "..." + typeof a  + "...." + JSON.stringify(a))            
+        // }else{
+        //     console.log("Cookie data not found")
+        // }
+
+    })
+    
+
+
+});

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Video Chat App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #181818;
+            color: #e9e9eb;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="heading" style="text-align: center; padding: 5px;">
+        <strong style="color: #2399ac;">
+            <h2>
+                Video Call<br>
+            </h2>
+        </strong>
+
+        <div style="padding: 5px;">
+            Welcome, <strong style="color: #2399ac;"> <%= name %> </strong> &nbsp;
+            <a href="/logout"><button class="btn btn-sm btn-outline-danger">Logout</button></a>
+            <br>
+        </div>
+        <div style="display: none;">
+            Your Unique ID : <span id="displayId" style="text-align: center;"> Not Connected to Server</span><br>
+            Your Socket ID : <span id="socketId" style="text-align: center;"> </span><br>
+        </div>
+
+    </div>
+    <br>
+
+    <!-- <div id="chat-window">
+        <div id="output"> </div>
+    </div>
+    <div class="container">
+        <form class="form-signup" onsubmit="return false">
+
+            <input type="text" id="handle" class="form-control" placeholder="Name" required>
+
+            <input type="text" id="message" class="form-control" placeholder="Enter Message" required autofocus> -->
+
+    <!-- <button id="button" class="btn btn-lg btn-primary btn-block" type="submit" hidden>Send</button> -->
+    <!-- </form>
+    </div> -->
+
+
+    <div class="container">
+        <div id="incoming-call" style="text-align: center;">
+            <div id="callerinfo"></div>
+        </div>
+        <div class="row">
+
+
+            <div class="col-s-6 col-md-6 col-lg-6">
+                <div style="text-align: center; color: #2399ac;">
+                    REMOTE
+                </div>
+                <video style="width: inherit;" id="rVideo" autoplay="autoplay">
+            </div>
+            <div class="col-s-6 col-md-6 col-lg-6">
+                <div style="text-align: center; color: #2399ac;">
+                    LOCAL
+                </div>
+                <video style="width: inherit" id="lVideo" autoplay="autoplay" muted>
+            </div>
+        </div>
+
+        <!-- <button id="conn_button" class="btn btn-success btn-lg btn-block" type="submit">Connect</button> -->
+        <div id="disconnectBtn" class="container">
+            <button id="disconnect_button" class="btn btn-danger btn-lg btn-block" type="submit"
+                style="display: none;">End Call</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- SIMPLE PEER -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.7.2/simplepeer.min.js"></script> -->
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js"></script> -->
+
+
+    <!-- PEER JS -->
+    <script src="https://unpkg.com/peerjs@1.2.0/dist/peerjs.min.js"></script>
+
+
+
+    <script src="/client.js" async defer></script>
+
+    <div class="container" style="text-align: center; color: #2399ac;">
+        ALL USERS
+        <div class="container" id="alluser" style="padding: 5px;"></div>
+    </div>
+    <input name="userid" id="userid" type="text" value="<%=id%>" hidden>
+    <input name="name" id="name" type="text" value="<%=name%>" hidden>
+    <input name="username" id="username" type="text" value="<%=username%>" hidden>
+</body>
+
+</html>
