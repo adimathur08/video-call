@@ -4,6 +4,7 @@ const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const session = require('express-session')
 const mongoose = require('mongoose')
+const enforce = require('express-sslify')
 // const cookieParser = require('cookie-parser')
 // const cookie = require('cookie')
 
@@ -57,6 +58,7 @@ dbuserFriends.find({}).then( (data)=>{
 const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true }))
+app.use(enforce.HTTPS());
 app.set('view engine', 'ejs')
 
 const users = {}
