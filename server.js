@@ -58,7 +58,7 @@ dbuserFriends.find({}).then( (data)=>{
 const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true }))
-app.use(enforce.HTTPS());
+app.use(enforce.HTTPS({ trustProtoHeader: true }));
 app.set('view engine', 'ejs')
 
 const users = {}
