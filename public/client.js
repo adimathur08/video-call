@@ -509,10 +509,26 @@ function showIncomingCall() {
 
 
 
-function showAlert( message, alerttype ) {
+function showDisableAlert( message, alerttype ) {
 
     $('#alert_placeholder').append( $('#alert_placeholder').append(
         '<div id="alertdiv" class="alert alert-warning alert-dismissible fade show" style="padding: 5px; text-align: center;" role="alert">' +
+        message +
+        '<button type="button" class="close" data-dismiss="alert" style=" padding: 5px;" aria-label="Close">'+
+        '<span aria-hidden="true">&times;</span>' +
+      '</button>' +
+    '</div>' )
+    );
+    setTimeout( function() {
+        $("#alertdiv").fadeOut(300, function(){ $(this).remove();});
+    }, 5000 );
+
+}
+
+function showEnableAlert( message, alerttype ) {
+
+    $('#alert_placeholder_enable').append( $('#alert_placeholder_enable').append(
+        '<div id="alertdiv" class="alert alert-success alert-dismissible fade show" style="padding: 5px; text-align: center;" role="alert">' +
         message +
         '<button type="button" class="close" data-dismiss="alert" style=" padding: 5px;" aria-label="Close">'+
         '<span aria-hidden="true">&times;</span>' +
@@ -533,14 +549,16 @@ socket.on('enable_canvas', ()=>{
         canvas_btn.innerHTML = "Hide Canvas"
         document.getElementById("canvas").style.display = "block"
 
-        showAlert( "User Enabled Canvas", "alert-info" )
+        showEnableAlert( "Canvas Enabled by Remote User", "alert-info" )
         document.getElementById('canvas').scrollIntoView()
     }
     else {
         canvas_btn.innerHTML = "Show Canvas"
         document.getElementById("canvas").style.display = "none"
 
-        showAlert( "User Disabled Canvas", "alert-info" )
+        showDisableAlert( "Canvas Disabled by Remote User", "alert-info" )
+        document.getElementById('alert_placeholder').scrollIntoView()
+
 
     }
 })
