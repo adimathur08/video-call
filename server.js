@@ -276,5 +276,22 @@ io.on('connection', (socket) => {
         io.to(callerid).emit('disconnect_request')
     })
 
+    socket.on("call_cancel", callerid=>{
+
+        io.to(callerid).emit('cancel_incomingCall')
+    })
+
+    socket.on('drawing', (data) => {
+
+        io.to(data.callerid).emit('drawing', data)
+    });
+
+    socket.on('enable_canvas', data =>{
+
+        io.to(data).emit('enable_canvas')
+    })
+
+
+
 
 });
