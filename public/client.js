@@ -10,7 +10,7 @@ const message = document.getElementById('message'),
 // disconnect_button = document.getElementById('disconnect_button')
 var Users = {}
 
-var incomingCallAudio = new Audio('../incomingCall.mp3');
+var incomingCallAudio = new Audio('/incomingCall.mp3');
 
 
 
@@ -354,6 +354,8 @@ function disconnectCall(peer) {
 
 function acceptCall() {
 
+    incomingCallAudio.pause();
+    incomingCallAudio.currentTime = 0;
     callAccepted = true
     console.log("Connecting to Peer server")
     const peer = new Peer()
@@ -419,6 +421,8 @@ async function call_not_answered(time) {
     return new Promise((resolve, reject) => {
 
         setTimeout(() => {
+            incomingCallAudio.pause();
+            incomingCallAudio.currentTime = 0;
             const parent = document.getElementById("callerinfo");
             while (parent.firstChild) {
                 parent.firstChild.remove();
