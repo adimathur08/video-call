@@ -10,18 +10,22 @@ const message = document.getElementById('message'),
 // disconnect_button = document.getElementById('disconnect_button')
 var Users = {}
 
+var incomingCallAudio = new Audio('../incomingCall.mp3');
+
+
+
 function getLvideo() {
 
-//     navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+    navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
     var constraints = {
 
         audio: true,
         video: true
     }
-    navigator.mediaDevices.getUserMedia(constraints).then((stream)=>{
+    navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
         window.localstream = stream;
         recStream(stream, 'lVideo')
-    }).catch((error)=>{
+    }).catch((error) => {
         alert("Cannot Access your Camera! \nPlease provide permission manually or check if other application is using the Camera")
         console.log(err)
     })
@@ -83,7 +87,7 @@ socket.on("allUsers", obj => {
             var button = document.createElement("button");
             button.innerHTML = "Call : " + names[x] + " (" + Users[x] + ") ";
             button.setAttribute('id', x)
-            button.setAttribute('class', "btn btn-outline-info ")
+            button.setAttribute('class', "btn btn-sm btn-outline-info ")
             button.style.margin = "5px"
             button.addEventListener("click", function () {
                 callPeer(this.id)
@@ -108,7 +112,7 @@ socket.on("hey", (data) => {
     caller = data.fromName
     callerid = data.from
     callerSignal = data.signal
-    console.log("Back to hey ....connecting peer")
+    console.log("Back to hey ....connecting peer" + callerid)
     showIncomingCall()
 
 })
@@ -120,7 +124,7 @@ socket.on('call_reject_status', () => {
 
     const parent = document.getElementById("callerinfo");
     while (parent.firstChild) {
-        parent.firstChild.remove();
+        parent.firstChild.remove(); 
     }
 
     var caller_name = document.createElement("span")
@@ -140,6 +144,23 @@ socket.on('call_accept_status', () => {
         parent.firstChild.remove();
     }
 
+
+
+})
+
+socket.on("cancel_incomingCall", ()=>{
+
+    outcall_status = 0
+    const parent = document.getElementById("callerinfo");
+    while (parent.firstChild) {
+        parent.firstChild.remove();
+    }
+
+    var caller_name = document.createElement("span")
+    caller_name.innerHTML = "<strong  style='color:#FF0000'> **** Call Missed **** </strong>\n"
+    var alluser = document.getElementById("callerinfo");
+    alluser.appendChild(caller_name)
+    call_not_answered(5000)
 })
 
 
@@ -151,11 +172,13 @@ function display_calling(id) {
     var alluser = document.getElementById("callerinfo");
 
     var endcall = document.createElement("button");
-    endcall.setAttribute('class', "btn btn-danger ")
+    endcall.setAttribute('class', "btn btn-sm btn-danger ")
     endcall.innerHTML = "Cancel"
     endcall.style.margin = "5px"
     endcall.addEventListener("click", function () {
         call_not_answered(1)
+        console.log("CAnce : " + id)
+        socket.emit("call_cancel", id)
     });
 
     alluser.appendChild(caller_name)
@@ -209,8 +232,11 @@ function callPeer(id) {
         console.log("CALLING PEER WITH SOCKET : " + id + "\n SIGNAL DATA  :   " + data)
         var yourID = document.getElementById("socketId").innerHTML
         display_calling(id)
-        socket.emit("callUser", { userToCall: id, signalData: data, from: yourID, fromName: document.getElementById('name').value })
 
+        document.getElementById('callerinfo').scrollIntoView()
+
+        socket.emit("callUser", { userToCall: id, signalData: data, from: yourID, fromName: document.getElementById('name').value })
+        callerid = id
         function disconnectPeer() {
             console.log("REJCECT 1 : " + peer)
             peer.disconnect()
@@ -273,6 +299,8 @@ function callPeer(id) {
         call.answer(window.localstream);
         console.log("CALL ANSWERED")
 
+        document.getElementById('canvas_btn').style.display = 'block'
+
         call.on('stream', function (stream) {
 
             document.getElementById('disconnect_button').style.display = 'block'
@@ -287,6 +315,10 @@ function callPeer(id) {
 
             document.getElementById('disconnect_button').style.display = 'None'
             disconnectCall(peer)
+
+            // hiding canvas
+            document.getElementById("canvas").style.display = "none"
+            document.getElementById('canvas_btn').style.display = "none"
         })
 
 
@@ -312,6 +344,10 @@ function disconnectCall(peer) {
     peer.destroy()
     console.log("Peer destroyed : " + peer.id)
     document.getElementById("displayId").innerHTML = " Not Connected to Server"
+
+    // hiding canvas
+    document.getElementById("canvas").style.display = "none"
+    document.getElementById('canvas_btn').style.display = "none"
 }
 
 
@@ -324,7 +360,9 @@ function acceptCall() {
     console.log("Connected to Peer server")
     peer.on("open", data => {
 
-        socket.emit("call_accepted", callerid)
+        socket.emit("call_accepted", callerid)  
+
+        document.getElementById('canvas_btn').style.display = 'block'
 
         document.getElementById('disconnect_button').style.display = 'block'
         console.log("PEER ID : " + peer.id)
@@ -401,13 +439,15 @@ function showIncomingCall() {
 
     if (receivingCall) {
 
+        document.getElementById('incoming-call').scrollIntoView()
+
         console.log("inside ifff")
         var caller_name = document.createElement("span")
         caller_name.innerHTML = "<strong> " + caller + " is calling you </strong>\n"
 
         var acceptbutton = document.createElement("button");
         acceptbutton.id = caller
-        acceptbutton.setAttribute('class', "btn btn-success ")
+        acceptbutton.setAttribute('class', "btn btn-sm btn-success ")
         acceptbutton.style.margin = "5px"
         acceptbutton.innerHTML = "Accept Call"
         acceptbutton.addEventListener("click", function () {
@@ -417,7 +457,7 @@ function showIncomingCall() {
         });
 
         var rejectbutton = document.createElement("button");
-        rejectbutton.setAttribute('class', "btn btn-danger ")
+        rejectbutton.setAttribute('class', "btn btn-sm btn-danger ")
         rejectbutton.innerHTML = "Reject Call"
         rejectbutton.style.margin = "5px"
         rejectbutton.addEventListener("click", function () {
@@ -429,6 +469,10 @@ function showIncomingCall() {
         alluser.appendChild(caller_name)
         alluser.appendChild(acceptbutton)
         alluser.appendChild(rejectbutton)
+
+        
+        incomingCallAudio.play()
+
         call_not_answered(20000)
 
 
@@ -438,3 +482,194 @@ function showIncomingCall() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function showAlert( message, alerttype ) {
+
+    $('#alert_placeholder').append( $('#alert_placeholder').append(
+        '<div id="alertdiv" class="alert alert-warning alert-dismissible fade show" style="padding: 5px; text-align: center;" role="alert">' +
+        message +
+        '<button type="button" class="close" data-dismiss="alert" style=" padding: 5px;" aria-label="Close">'+
+        '<span aria-hidden="true">&times;</span>' +
+      '</button>' +
+    '</div>' )
+    );
+    setTimeout( function() {
+        $("#alertdiv").fadeOut(300, function(){ $(this).remove();});
+    }, 5000 );
+
+}
+
+
+
+socket.on('enable_canvas', ()=>{
+
+    if (document.getElementById("canvas").style.display == "none") {
+        canvas_btn.innerHTML = "Hide Canvas"
+        document.getElementById("canvas").style.display = "block"
+
+        showAlert( "User Enabled Canvas", "alert-info" )
+        document.getElementById('canvas').scrollIntoView()
+    }
+    else {
+        canvas_btn.innerHTML = "Show Canvas"
+        document.getElementById("canvas").style.display = "none"
+
+        showAlert( "User Disabled Canvas", "alert-info" )
+
+    }
+})
+
+
+
+
+var canvas_btn = document.getElementById("canvas_btn")
+canvas_btn.addEventListener('click', () => {
+    if (document.getElementById("canvas").style.display == "none") {
+        canvas_btn.innerHTML = "Hide Canvas"
+        document.getElementById("canvas").style.display = "block"
+        document.getElementById('canvas').scrollIntoView()
+
+    }
+    else {
+        canvas_btn.innerHTML = "Show Canvas"
+        document.getElementById("canvas").style.display = "none"
+    }
+    socket.emit('enable_canvas', callerid)
+
+})
+
+
+var canvas = document.getElementsByClassName('whiteboard')[0];
+var colors = document.getElementsByClassName('color');
+var context = canvas.getContext('2d');
+
+var current = {
+    color: 'black'
+};
+var drawing = false;
+
+canvas.addEventListener('mousedown', onMouseDown, false);
+canvas.addEventListener('mouseup', onMouseUp, false);
+canvas.addEventListener('mouseout', onMouseUp, false);
+canvas.addEventListener('mousemove', throttle(onMouseMove, 10), false);
+
+//Touch support for mobile devices
+canvas.addEventListener('touchstart', onMouseDown, false);
+canvas.addEventListener('touchend', onMouseUp, false);
+canvas.addEventListener('touchcancel', onMouseUp, false);
+canvas.addEventListener('touchmove', throttle(onMouseMove, 10), false);
+
+for (var i = 0; i < colors.length; i++) {
+    colors[i].addEventListener('click', onColorUpdate, false);
+}
+
+socket.on('drawing', onDrawingEvent);
+
+window.addEventListener('resize', onResize, false);
+onResize();
+
+
+function drawLine(x0, y0, x1, y1, color, emit) {
+    context.beginPath();
+    context.moveTo(x0, y0);
+    context.lineTo(x1, y1);
+    context.strokeStyle = color;
+    if (color == "white"){
+        context.lineWidth = 30;
+    }
+    else{
+        context.lineWidth = 2;
+    }
+    
+    context.stroke();
+    context.closePath();
+
+    if (!emit) { return; }
+    var w = canvas.width;
+    var h = canvas.height;
+
+    socket.emit('drawing', {
+        x0: x0 / w,
+        y0: y0 / h,
+        x1: x1 / w,
+        y1: y1 / h,
+        color: color,
+        callerid
+    });
+}
+
+function onMouseDown(e) {
+    drawing = true;
+    current.x = e.clientX || e.touches[0].clientX;
+    current.y = e.clientY || e.touches[0].clientY;
+}
+
+function onMouseUp(e) {
+    if (!drawing) { return; }
+    drawing = false;
+    drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, true);
+}
+
+function onMouseMove(e) {
+    if (!drawing) { return; }
+    drawLine(current.x, current.y, e.clientX || e.touches[0].clientX, e.clientY || e.touches[0].clientY, current.color, true);
+    current.x = e.clientX || e.touches[0].clientX;
+    current.y = e.clientY || e.touches[0].clientY;
+}
+
+function onColorUpdate(e) {
+    current.color = e.target.className.split(' ')[1];
+    console.log("color changed : " + current.color )
+}
+
+// limit the number of events per second
+function throttle(callback, delay) {
+    var previousCall = new Date().getTime();
+    return function () {
+        var time = new Date().getTime();
+
+        if ((time - previousCall) >= delay) {
+            previousCall = time;
+            callback.apply(null, arguments);
+        }
+    };
+}
+
+function onDrawingEvent(data) {
+
+    var w = canvas.width;
+    var h = canvas.height;
+    drawLine(data.x0 * w, data.y0 * h, data.x1 * w, data.y1 * h, data.color);
+}
+
+// make the canvas fill its parent
+function onResize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
