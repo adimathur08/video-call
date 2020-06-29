@@ -542,6 +542,16 @@ function showEnableAlert( message, alerttype ) {
 }
 
 
+// Disable scroll inside canvas
+document.getElementById( "canvas" ).onwheel = function(event){
+    event.preventDefault();
+};
+
+document.getElementById( "canvas" ).onmousewheel = function(event){
+    event.preventDefault();
+};
+
+
 
 socket.on('enable_canvas', ()=>{
 
