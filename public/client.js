@@ -150,6 +150,8 @@ socket.on('call_accept_status', () => {
 
 socket.on("cancel_incomingCall", ()=>{
 
+    incomingCallAudio.pause();
+    incomingCallAudio.currentTime = 0;
     outcall_status = 0
     const parent = document.getElementById("callerinfo");
     while (parent.firstChild) {
