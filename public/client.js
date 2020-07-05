@@ -279,7 +279,8 @@ function callPeer(id) {
 
         console.log("ERROR IN CONNECTING PEER : " + err)
         console.log("Trying to reconnect")
-        reconnectPeer()
+        // reconnectPeer()
+        callPeer(id)
     })
 
     peer.on("stream", stream => {
