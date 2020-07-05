@@ -215,8 +215,8 @@ function display_calling(id) {
 function callPeer(id) {
     console.log("Setting up peer connection")
     const peer = new Peer(
-            {
-            host: '9000-e779bce0-9311-445f-a23c-9d52d7c180b6.ws-us02.gitpod.io',
+        '',{
+            host: 'server-peer.herokuapp.com',
             port: '443',
             path: '/',
             secure: true
@@ -367,7 +367,14 @@ function acceptCall() {
     incomingCallAudio.currentTime = 0;
     callAccepted = true
     console.log("Connecting to Peer server")
-    const peer = new Peer()
+        const peer = new Peer(
+        '',{
+            host: 'server-peer.herokuapp.com',
+            port: '443',
+            path: '/',
+            secure: true
+        }
+    )
     console.log("Connected to Peer server")
     peer.on("open", data => {
 
